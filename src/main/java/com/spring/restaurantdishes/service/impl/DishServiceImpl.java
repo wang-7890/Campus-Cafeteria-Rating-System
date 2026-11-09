@@ -99,13 +99,16 @@ public class DishServiceImpl implements DishService {
         Number pageNum = dishDetailPage.getPage();
         Number pageSize = dishDetailPage.getSize();
         //查询条件
+        QueryWrapper queryWrapper = QueryWrapper.create().where(Dish::getId).eq(id);
+        Dish dish = dishMapper.selectOneByQueryAs(queryWrapper, Dish.class);
+        if(dish == null || dish.getStatus() == 0){
+            return Result.error(404,"菜品不存在或已下架");
+        }
         QueryWrapper wrapper = QueryWrapper.create().where(review::getDishId).eq(id);
         wrapper.orderBy(review::getCreatedAt,false).orderBy(review::getId);
         //构建分页查询结果对象
         Page<review> reviewPage = reviewMapper.paginateAs(pageNum,pageSize,wrapper, review.class);
-        if (reviewPage == null){
-            return Result.error(404,"菜品不存在或已下架");
-        }
+
         //构建返回的PageBean
         PageBean<review> reviewPageBean = new PageBean<>();
 

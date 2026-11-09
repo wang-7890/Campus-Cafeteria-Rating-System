@@ -1,14 +1,11 @@
 package com.spring.restaurantdishes.controller;
 
-import com.mybatisflex.core.query.QueryWrapper;
 import com.spring.restaurantdishes.Mapper.DishMapper;
 import com.spring.restaurantdishes.model.DishListItem;
 import com.spring.restaurantdishes.model.PageBean;
 import com.spring.restaurantdishes.model.RequestDetails.DishDetailPage;
 import com.spring.restaurantdishes.model.Result;
 import com.spring.restaurantdishes.model.RequestDetails.DishPage;
-import com.spring.restaurantdishes.model.dataBasePojo.Dish;
-import com.spring.restaurantdishes.model.dataBasePojo.review;
 import com.spring.restaurantdishes.service.DishService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +13,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api")
