@@ -2,15 +2,20 @@ package com.spring.restaurantdishes.model;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
+/**
+ * dish类公用属性类，分页查询查出来的属性
+ */
 @Data
 public class DishListItem {
-    private Number id;
+    private Long id;
     private String name;
     private String canteenName;
     private String windowName;
     private String category;
-    private String price;
+    private BigDecimal price;
     private String imageUrl;
-    private String avgRating;
-    private String reviewCount;
+    private BigDecimal avgRating;
+    private Long reviewCount;
 }

@@ -6,9 +6,11 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.spring.restaurantdishes.Mapper.userMapper;
 import com.spring.restaurantdishes.config.BCryptConfig;
 import com.spring.restaurantdishes.model.Result;
+import com.spring.restaurantdishes.model.dataBasePojo.user;
 import com.spring.restaurantdishes.model.userInfo;
 import com.spring.restaurantdishes.service.userService;
 import com.spring.restaurantdishes.utils.JwtUtil;
+import com.spring.restaurantdishes.utils.threadLocalUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -30,14 +32,14 @@ public class userServiceImpl implements userService {
     private StringRedisTemplate redisTemplate;
     @Override
     public Result register(String username,String password,String nickname) {
-        QueryWrapper queryWrapper = QueryWrapper.create().where(userInfo::getUsername).eq(username);
-        userInfo userInfo = userMapper.selectOneByQuery(queryWrapper);
-        if(userInfo!=null){
+        QueryWrapper queryWrapper = QueryWrapper.create().where(user::getUsername).eq(username);
+        user existingUser = userMapper.selectOneByQuery(queryWrapper);
+        if(existingUser!=null){
             return Result.error(409, "用户名已存在");
         }
         else {
             String pwd = bCryptConfig.passwordEncoder().encode(password);
-            userInfo newUser = new userInfo();
+            user newUser = new user();
             newUser.setUsername(username.strip());
             newUser.setPassword(pwd);
             newUser.setRole("USER");
@@ -49,11 +51,11 @@ public class userServiceImpl implements userService {
     }
 
     @Override
-    public Map<String, Object> login(userInfo user) {
+    public Map<String, Object> login(user user) {
         String jti = UUID.randomUUID().toString();
         String token = JwtUtil.genToken(user.getId(),user.getRole(),jti);
-//        QueryWrapper queryWrapper = QueryWrapper.create().where(userInfo::getUsername).eq(username);
-//        userInfo user = userMapper.selectOneByQuery(queryWrapper);
+//        QueryWrapper queryWrapper = QueryWrapper.create().where(user::getUsername).eq(username);
+//        user user = userMapper.selectOneByQuery(queryWrapper);
 //        Map<String,Object> userMsg = new HashMap<>();
 //        Map<String,Object> usermap = new HashMap<>();
 //        userMsg.put("id",user.getId());
@@ -79,11 +81,11 @@ public class userServiceImpl implements userService {
         } catch (JsonProcessingException exception){
             throw new IllegalStateException("登录会话保存失败", exception);
         }
-        Map<String, Object> safeUser = new HashMap<>();
-        safeUser.put("id", user.getId());
-        safeUser.put("username", user.getUsername());
-        safeUser.put("nickname", user.getNickname());
-        safeUser.put("role", user.getRole());
+        userInfo safeUser = new userInfo();
+        safeUser.setId(user.getId());
+        safeUser.setUsername(user.getUsername());
+        safeUser.setNickname(user.getNickname());
+        safeUser.setRole(user.getRole());
 
         Map<String, Object> data = new HashMap<>();
         data.put("token", token);
@@ -91,5 +93,12 @@ public class userServiceImpl implements userService {
         data.put("expiresIn", 7200);
         data.put("userInfo", safeUser);
         return data;
+    }
+
+    @Override
+    public void logout() {
+        Map<String,Object> map = threadLocalUtils.get();
+        String jti = (String) map.get("jti");
+        redisTemplate.delete("canteen:session:" + jti);
     }
 }

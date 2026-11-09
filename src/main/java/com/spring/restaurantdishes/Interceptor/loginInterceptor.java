@@ -37,7 +37,7 @@ public class loginInterceptor implements HandlerInterceptor {
             String token = header.substring(7).trim();
 
             // 先验证签名和过期时间
-            DecodedJWT jwt = (DecodedJWT) JwtUtil.parseToken(token);
+            DecodedJWT jwt = JwtUtil.parseToken(token);
             String jti = jwt.getId();
 
             if (jti == null || jti.isBlank()) {

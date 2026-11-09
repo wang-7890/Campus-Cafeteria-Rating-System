@@ -1,4 +1,4 @@
-package com.spring.restaurantdishes.model;
+package com.spring.restaurantdishes.model.RequestDetails;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
