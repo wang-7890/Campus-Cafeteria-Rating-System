@@ -19,8 +19,6 @@ import java.util.List;
 public class DishController {
     @Autowired
     private DishService dishService;
-    @Autowired
-    private DishMapper dishMapper;
 
     public DishController(DishService dishService) {
         this.dishService = dishService;
@@ -38,7 +36,7 @@ public class DishController {
     }
 
     @GetMapping("/dishes/{id}")
-    public ResponseEntity<Result> dishesDetails(@RequestParam(required = true) Number id){
+    public ResponseEntity<Result> dishesDetails(@RequestParam Number id){
         return ResponseEntity.ok(dishService.DishDetail(id));
     }
 
