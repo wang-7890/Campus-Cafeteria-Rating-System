@@ -1,4 +1,8 @@
 HELP.md
+
+# 本地数据库配置（每人自己维护，不提交）
+application-local.yml
+
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

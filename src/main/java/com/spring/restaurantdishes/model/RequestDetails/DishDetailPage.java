@@ -7,8 +7,8 @@ import lombok.Data;
 @Data
 public class DishDetailPage {
     @Min(1)
-    private Number page = 1;
-    @Min(10)
+    private Integer page = 1;
+    @Min(1)
     @Max(50)
-    private Number size = 10;
+    private Integer size = 10;
 }

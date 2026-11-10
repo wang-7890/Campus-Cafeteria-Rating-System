@@ -9,6 +9,11 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.validation.method.ParameterValidationResult;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.util.List;
 
 @Slf4j
 @RestControllerAdvice
@@ -31,6 +36,30 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(409)
                 .body(Result.error(409, "数据冲突"));
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<Result<Void>> handleMethodValidation(HandlerMethodValidationException exception) {
+        List<ParameterValidationResult> results = exception.getAllValidationResults();
+        if (results.isEmpty() || results.get(0).getResolvableErrors().isEmpty()) {
+            return badRequest("参数错误或参数校验失败");
+        }
+        ParameterValidationResult first = results.get(0);
+        String parameter = first.getMethodParameter().getParameterName();
+        String message = (parameter == null ? "参数" : parameter) + ": "
+                + first.getResolvableErrors().get(0).getDefaultMessage();
+        return badRequest(message);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Result<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException exception) {
+        return badRequest("参数格式不正确");
+    }
+
+    private ResponseEntity<Result<Void>> badRequest(String message) {
+        return ResponseEntity
+                .status(400)
+                .body(Result.error(400, message));
     }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<Void>> handleException(Exception exception) {

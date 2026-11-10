@@ -46,7 +46,7 @@ public class userServiceImpl implements userService {
             newUser.setNickname(nickname);
             newUser.setStatus(1);
             userMapper.insert(newUser);
-            return Result.success("注册成功");
+            return Result.successMessage("注册成功");
         }
     }
 
