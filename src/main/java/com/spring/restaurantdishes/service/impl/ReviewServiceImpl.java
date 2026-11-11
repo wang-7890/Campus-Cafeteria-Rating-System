@@ -1,9 +1,14 @@
 package com.spring.restaurantdishes.service.impl;
 
+import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.spring.restaurantdishes.Mapper.DishMapper;
 import com.spring.restaurantdishes.Mapper.ReviewMapper;
+import com.spring.restaurantdishes.model.MyReviewItem;
+import com.spring.restaurantdishes.model.PageBean;
+import com.spring.restaurantdishes.model.RequestDetails.MyReviewsRequest;
 import com.spring.restaurantdishes.model.RequestDetails.ReviewRequest;
+import com.spring.restaurantdishes.model.RequestDetails.UpdateReviewRequest;
 import com.spring.restaurantdishes.model.Result;
 import com.spring.restaurantdishes.model.dataBasePojo.Dish;
 import com.spring.restaurantdishes.model.dataBasePojo.review;
@@ -20,11 +25,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
- * 发表评价（接口文档 5.1）
- * 1. 事务内：锁菜品行 -> 查重 -> 插入评价 -> 重算菜品统计
- * 2. 事务提交后：删除菜品详情缓存 + 覆盖写热门榜
+ * 评价接口（接口文档 5.1 发表评价、5.2 修改评价、5.3 删除评价、5.4 查询我的评价）
+ * 通用模式：事务内锁菜品行并完成数据库操作，事务提交后删除菜品详情缓存 + 覆盖写热门榜
  */
 @Slf4j
 @Service
@@ -93,6 +98,107 @@ public class ReviewServiceImpl implements ReviewService {
         }
         return result;
     }
+
+
+    @Override
+    public Result<Void> update(Long userId, Long reviewId, UpdateReviewRequest request) {
+        review re = reviewMapper.selectOneById(reviewId);
+        if (re == null) {
+            return Result.error(404, "评价不存在");
+        }
+        if (!Objects.equals(re.getUserId(), userId)) {
+            return Result.error(403, "尝试修改他人评价");
+        }
+
+        // 内容去首尾空格后校验长度，与 5.1 保持一致（上界 500 由 @Size 兜住）
+        String content = request.getContent() == null ? null : request.getContent().strip();
+        if (content == null || content.length() < 2) {
+            return Result.error(400, CONTENT_INVALID_MESSAGE);
+        }
+
+        TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+        Result<Void> result = transactionTemplate.execute(status -> {
+            // 锁定菜品行，防止并发修改评价时统计互相覆盖（菜品已下架不影响修改，允许为 null）
+            lockDish(re.getDishId());
+
+            int rows = reviewMapper.updateReview(reviewId, request.getRating(), content);
+            if (rows == 0) {
+                // 兜底：评价在归属校验后被并发删除
+                return Result.error(404, "评价不存在");
+            }
+
+            // 修改评分后重新计算平均评分（文档 5.2 业务规则）
+            dishMapper.recomputeReviewStats(re.getDishId());
+
+            return Result.successMessage("修改成功");
+        });
+
+        if (result != null && result.getCode() == 0) {
+            syncRedisAfterCommit(re.getDishId());
+        }
+        return result;
+    }
+
+    @Override
+    public Result<Void> deleteComment(Long reviewId, Long userId, String role) {
+        review re = reviewMapper.selectOneById(reviewId);
+        if (re == null) {
+            return Result.error(404, "评价不存在");
+        }
+        if (!Objects.equals(role, "ADMIN") && !Objects.equals(re.getUserId(), userId)) {
+            return Result.error(403, "尝试删除他人评价");
+        }
+
+        Result<Void> result = getResult(reviewId, re);
+
+        if (result != null && result.getCode() == 0) {
+            syncRedisAfterCommit(re.getDishId());
+        }
+        return result;
+    }
+
+    /**
+     * 查询我的评价（接口文档 5.4）
+     * 只读分页查询：无事务、无锁；按创建时间倒序、创建时间相同时按 id 倒序；
+     * 已下架菜品的历史评价仍返回（下架只改 status，dish 行仍在，JOIN 不受影响）。
+     */
+    @Override
+    public Result<PageBean<MyReviewItem>> getMyReviews(MyReviewsRequest request, Long userId) {
+        int pageNum = request.getPage();
+        int pageSize = request.getSize();
+        long total = reviewMapper.countByUserId(userId);
+        List<MyReviewItem> reviewItemList = reviewMapper.getAllMyReviews(userId, (pageNum - 1) * pageSize, pageSize);
+
+        PageBean<MyReviewItem> pageBean = new PageBean<>();
+        pageBean.setList(reviewItemList);
+        pageBean.setPage(pageNum);
+        pageBean.setSize(pageSize);
+        pageBean.setTotal(total);
+        pageBean.setPages(total == 0 ? 0 : (total + pageSize - 1) / pageSize);
+
+        return Result.success(pageBean);
+    }
+
+    private Result<Void> getResult(Long reviewId, review re) {
+        TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+        return transactionTemplate.execute(status -> {
+            // 锁定菜品行，防止并发删除时统计互相覆盖（菜品已下架不影响删除）
+            lockDish(re.getDishId());
+
+            int rows = reviewMapper.deleteById(reviewId);
+            if (rows == 0) {
+                // 兜底：评价在权限校验后被并发删除
+                //在查评价到删评价之间的时间可能会被另一个用户删除，需要再次判断
+                return Result.error(404, "评价不存在");
+            }
+
+            // 删除后重算统计：无评价时 COALESCE/COUNT 使平均分归 0.0、评价数归 0
+            dishMapper.recomputeReviewStats(re.getDishId());
+
+            return Result.successMessage("删除成功");
+        });
+    }
+
 
     private Dish lockDish(Long dishId) {
         QueryWrapper wrapper = QueryWrapper.create()

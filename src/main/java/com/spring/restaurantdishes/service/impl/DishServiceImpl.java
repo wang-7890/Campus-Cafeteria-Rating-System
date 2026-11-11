@@ -104,7 +104,7 @@ public class DishServiceImpl implements DishService {
         // 榜单 key 不存在时按 MySQL 全量懒重建热门榜 ZSET（数据库文档 6.3）；
         // Redis 异常（含 hasKey 返回 null）不影响本次返回，直接使用 MySQL 查询结果
         try {
-            if (Boolean.FALSE.equals(stringRedisTemplate.hasKey(HOT_DISHES_KEY))) {
+            if (!stringRedisTemplate.hasKey(HOT_DISHES_KEY)) {
                 rebuildHotList();
             }
         } catch (Exception exception) {
