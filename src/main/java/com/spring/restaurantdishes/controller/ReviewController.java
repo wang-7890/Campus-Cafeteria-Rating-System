@@ -1,6 +1,6 @@
 package com.spring.restaurantdishes.controller;
 
-import com.spring.restaurantdishes.model.MyReviewItem;
+import com.spring.restaurantdishes.model.vo.MyReviewItem;
 import com.spring.restaurantdishes.model.PageBean;
 import com.spring.restaurantdishes.model.RequestDetails.MyReviewsRequest;
 import com.spring.restaurantdishes.model.RequestDetails.ReviewRequest;
@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,10 +25,6 @@ public class ReviewController {
         this.reviewService = reviewService;
     }
 
-    /**
-     * 发表评价（接口文档 5.1）
-     * 登录由 loginInterceptor 保证；userId 取当前登录用户，不信任前端传入。
-     */
     @PostMapping("/dishes/{id}/reviews")
     public ResponseEntity<Result<Map<String, Long>>> createReview(
             @PathVariable Long id,
@@ -44,10 +39,6 @@ public class ReviewController {
         return ResponseEntity.status(result.getCode()).body(result);
     }
 
-    /**
-     * 修改评价（接口文档 5.2）
-     * 登录由 loginInterceptor 保证；userId 取当前登录用户，不信任前端传入。
-     */
     @PutMapping("/reviews/{id}")
     public ResponseEntity<Result<Void>> updateReview(
             @PathVariable("id") Long reviewId,
@@ -74,11 +65,6 @@ public class ReviewController {
         return ResponseEntity.status(result.getCode()).body(result);
     }
 
-    /**
-     * 查询我的评价（接口文档 5.4）
-     * 登录由 loginInterceptor 保证；userId 取当前登录用户，不信任前端传入。
-     * page/size 为 Query 参数，与 DishController 的分页接口保持一致的绑定方式。
-     */
     @GetMapping("/users/me/reviews")
     public ResponseEntity<Result<PageBean<MyReviewItem>>> myReviews(
             @Validated @ModelAttribute MyReviewsRequest request){

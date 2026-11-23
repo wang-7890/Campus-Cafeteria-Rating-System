@@ -1,4 +1,4 @@
-package com.spring.restaurantdishes.model;
+package com.spring.restaurantdishes.model.vo;
 
 import lombok.Data;
 

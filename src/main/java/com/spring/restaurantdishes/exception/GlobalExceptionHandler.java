@@ -1,4 +1,4 @@
-package com.spring.restaurantdishes.ecception;
+package com.spring.restaurantdishes.exception;
 
 import com.spring.restaurantdishes.model.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +68,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(500)
                 .body(Result.error(500, "服务器内部错误"));
+    }
+    @ExceptionHandler(AiServiceException.class)
+    public ResponseEntity<Result<Void>> handleAiService(AiServiceException e){
+        log.error("AI 服务调用失败", e);
+        return ResponseEntity.status(500).body(Result.error(500, "AI 服务暂时不可用，请稍后重试"));
     }
 
 }

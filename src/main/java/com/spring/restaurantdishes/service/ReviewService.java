@@ -1,6 +1,6 @@
 package com.spring.restaurantdishes.service;
 
-import com.spring.restaurantdishes.model.MyReviewItem;
+import com.spring.restaurantdishes.model.vo.MyReviewItem;
 import com.spring.restaurantdishes.model.PageBean;
 import com.spring.restaurantdishes.model.RequestDetails.MyReviewsRequest;
 import com.spring.restaurantdishes.model.RequestDetails.ReviewRequest;

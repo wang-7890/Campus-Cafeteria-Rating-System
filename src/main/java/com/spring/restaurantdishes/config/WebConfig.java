@@ -18,7 +18,8 @@ public class WebConfig implements WebMvcConfigurer {
                 "/api/dishes",
                 "/api/dishes/hot",
                 "/api/dishes/{id}",
-                "/api/dishes/{id}/reviews"
+                "/api/dishes/{id}/reviews",
+                "/api/dishes/{id}/ai-summary"
         );
     }
 }

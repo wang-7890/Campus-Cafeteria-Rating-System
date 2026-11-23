@@ -1,9 +1,9 @@
 package com.spring.restaurantdishes.Mapper;
 
 import com.mybatisflex.core.BaseMapper;
-import com.spring.restaurantdishes.model.MyReviewItem;
-import com.spring.restaurantdishes.model.ReviewItem;
-import com.spring.restaurantdishes.model.dataBasePojo.review;
+import com.spring.restaurantdishes.model.vo.MyReviewItem;
+import com.spring.restaurantdishes.model.vo.ReviewItem;
+import com.spring.restaurantdishes.model.DataBase.review;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -38,7 +38,7 @@ public interface ReviewMapper extends BaseMapper<review> {
             "DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt, " +
             "DATE_FORMAT(r.updated_at, '%Y-%m-%d %H:%i:%s') AS updatedAt " +
             "FROM review r " +
-            "JOIN `user` usr ON usr.id = r.user_id " +
+            "JOIN user usr ON usr.id = r.user_id " +
             "JOIN dish d ON d.id = r.dish_id " +
             "WHERE r.user_id = #{userId} " +
             "ORDER BY r.created_at DESC, r.id DESC " +

@@ -1,4 +1,4 @@
-package com.spring.restaurantdishes.model.dataBasePojo;
+package com.spring.restaurantdishes.model.DataBase;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mybatisflex.annotation.Id;

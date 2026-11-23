@@ -7,10 +7,10 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.spring.restaurantdishes.Mapper.DishMapper;
 import com.spring.restaurantdishes.Mapper.ReviewMapper;
 import com.spring.restaurantdishes.model.*;
+import com.spring.restaurantdishes.model.vo.*;
 import com.spring.restaurantdishes.model.RequestDetails.DishDetailPage;
-import com.spring.restaurantdishes.model.dataBasePojo.Dish;
+import com.spring.restaurantdishes.model.DataBase.Dish;
 import com.spring.restaurantdishes.model.RequestDetails.DishPage;
-import com.spring.restaurantdishes.model.dataBasePojo.review;
 import com.spring.restaurantdishes.service.DishService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,6 +112,21 @@ public class DishServiceImpl implements DishService {
         }
         return dishListItems;
     }
+    @Override
+    public void syncNewDishHotList(Dish dish){
+        try{
+            if (stringRedisTemplate.hasKey(HOT_DISHES_KEY)){
+                stringRedisTemplate.opsForZSet().add(
+                        HOT_DISHES_KEY,String.valueOf(dish.getId()),
+                        hotScore(dish)
+                );
+            }else {
+                rebuildHotList();
+            }
+        }catch (Exception exception){
+            log.warn("新增菜品热门榜同步失败, dishId={}", dish.getId(), exception);
+        }
+    }
 
     private void rebuildHotList() {
         try {
@@ -140,20 +155,6 @@ public class DishServiceImpl implements DishService {
 
     @Override
     public Result DishDetail(Number id) {
-//        QueryWrapper wrapper = QueryWrapper.create().where(Dish::getId).eq(id);
-//        DishDetail dishDetail = dishMapper.selectOneByQueryAs(wrapper, DishDetail.class);
-//        if(dishDetail == null || dishDetail.getId() == 0){
-//            return Result.error(404,"菜品不存在或已下架");
-//        }
-//
-//        try {
-//            stringRedisTemplate.opsForValue().set("canteen:dish:detail:"+dishDetail.getId(),objectMapper.writeValueAsString(dishDetail)
-//            , Duration.ofSeconds(1800));
-//        } catch (JsonProcessingException e) {
-//            throw new RuntimeException(e);
-//        }
-//        return Result.success(dishDetail);
-
         try {
             String cacheJson = stringRedisTemplate.opsForValue().get("canteen:dish:detail:"+id);
             if(cacheJson!=null){

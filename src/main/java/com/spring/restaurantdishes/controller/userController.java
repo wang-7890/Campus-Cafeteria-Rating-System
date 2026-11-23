@@ -7,7 +7,7 @@ import com.spring.restaurantdishes.config.BCryptConfig;
 import com.spring.restaurantdishes.model.RequestDetails.LoginRequest;
 import com.spring.restaurantdishes.model.RequestDetails.RegisterRequest;
 import com.spring.restaurantdishes.model.Result;
-import com.spring.restaurantdishes.model.dataBasePojo.user;
+import com.spring.restaurantdishes.model.DataBase.user;
 import com.spring.restaurantdishes.service.userService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;

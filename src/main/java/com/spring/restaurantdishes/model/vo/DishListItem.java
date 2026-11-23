@@ -1,11 +1,14 @@
-package com.spring.restaurantdishes.model;
+package com.spring.restaurantdishes.model.vo;
 
 import lombok.Data;
 
 import java.math.BigDecimal;
 
+/**
+ * dish类公用属性类，分页查询查出来的属性
+ */
 @Data
-public class DishDetail {
+public class DishListItem {
     private Long id;
     private String name;
     private String canteenName;
@@ -15,5 +18,4 @@ public class DishDetail {
     private String imageUrl;
     private BigDecimal avgRating;
     private Long reviewCount;
-    private String description;
 }

@@ -24,7 +24,21 @@
         <mybatis-flex.version>1.11.8</mybatis-flex.version>
         <lombok.version>1.18.48</lombok.version>
         <java-jwt.version>4.4.0</java-jwt.version>
+        <langchain4j.version>1.23.0</langchain4j.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- LangChain4j：统一管理核心库与各 Spring Boot starter 版本 -->
+            <dependency>
+                <groupId>dev.langchain4j</groupId>
+                <artifactId>langchain4j-bom</artifactId>
+                <version>${langchain4j.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -76,6 +90,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- LangChain4j：OpenAI 接入（兼容 OpenAI 协议的端点均可复用，如 DeepSeek、通义、智谱） -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-open-ai-spring-boot-starter</artifactId>
         </dependency>
     </dependencies>
 

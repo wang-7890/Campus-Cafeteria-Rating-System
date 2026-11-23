@@ -1,7 +1,7 @@
 package com.spring.restaurantdishes.service;
 
 import com.spring.restaurantdishes.model.Result;
-import com.spring.restaurantdishes.model.dataBasePojo.user;
+import com.spring.restaurantdishes.model.DataBase.user;
 
 import java.util.Map;
 

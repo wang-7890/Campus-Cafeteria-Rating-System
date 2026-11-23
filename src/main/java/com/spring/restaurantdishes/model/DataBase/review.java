@@ -1,4 +1,4 @@
-package com.spring.restaurantdishes.model.dataBasePojo;
+package com.spring.restaurantdishes.model.DataBase;
 
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
